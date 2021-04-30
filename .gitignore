@@ -6,3 +6,4 @@ node_modules
 .grunt
 require.js
 build
+dist

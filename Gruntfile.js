@@ -1,17 +1,16 @@
-var babel = require('rollup-plugin-babel');
+var babel = require('rollup-plugin-babel')
 
-module.exports = function(grunt) {
-
+module.exports = function (grunt) {
   // configure the tasks
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     clean: {
       dist: {
-        src: [ 'dist' ]
+        src: ['dist'],
       },
       specs: {
-        src: 'spec/spec.js'
-      }
+        src: 'spec/spec.js',
+      },
     },
     coffee: {
       build: {
@@ -57,44 +56,52 @@ module.exports = function(grunt) {
             'src/immutable/errors.coffee',
             'src/immutable/persistence.coffee',
             'src/immutable/base.coffee',
-          ]
-        }
+          ],
+        },
       },
       specs: {
         files: {
-          'spec/spec.js': [ 'spec/support/init.coffee', 'spec/support/*.coffee', 'spec/**/*.coffee' ]
-        }
-      }
+          'spec/spec.js': [
+            'spec/support/init.coffee',
+            'spec/support/*.coffee',
+            'spec/**/*.coffee',
+          ],
+        },
+      },
     },
     rollup: {
       options: {
         plugins: [
           babel({
-            exclude: './node_modules/**'
-          })
-        ]
+            exclude: './node_modules/**',
+          }),
+        ],
       },
       build: {
         options: {
           format: 'umd',
           name: 'active-resource',
-          moduleName: 'ActiveResource'
+          moduleName: 'ActiveResource',
         },
-        files: [{
-          dest: 'build/active-resource.js',
-          src: 'build/active-resource.js',
-        }],
+        files: [
+          {
+            dest: 'build/active-resource.js',
+            src: 'build/active-resource.js',
+          },
+        ],
       },
       specs: {
         options: {
           format: 'umd',
           name: 'ActiveResourceSpecs',
         },
-        files: [{
-          dest: 'spec/spec.js',
-          src: 'spec/spec.js',
-        }],
-      }
+        files: [
+          {
+            dest: 'spec/spec.js',
+            src: 'spec/spec.js',
+          },
+        ],
+      },
     },
     uglify: {
       release: {
@@ -103,34 +110,36 @@ module.exports = function(grunt) {
           sourceMap: true,
         },
         files: {
-          'build/active-resource.min.js': 'build/active-resource.js'
-        }
-      }
+          'build/active-resource.min.js': 'build/active-resource.js',
+        },
+      },
     },
     concat: {
       release: {
         options: {
           banner:
-          '/*\n' +
-          '\tactive-resource <%= pkg.version %>\n' +
-          '\t(c) <%= grunt.template.today("yyyy") %> Nick Landgrebe && Peak Labs, LLC DBA Occasion App\n' +
-          '\tactive-resource may be freely distributed under the MIT license\n' +
-          '\tPortions of active-resource were inspired by or borrowed from Rail\'s ActiveRecord library\n' +
-          '*/\n\n'
+            '/*\n' +
+            '\tactive-resource <%= pkg.version %>\n' +
+            '\t(c) <%= grunt.template.today("yyyy") %> Nick Landgrebe && Peak Labs, LLC DBA Occasion App\n' +
+            '\tactive-resource may be freely distributed under the MIT license\n' +
+            "\tPortions of active-resource were inspired by or borrowed from Rail's ActiveRecord library\n" +
+            '*/\n\n',
         },
         files: {
           'dist/active-resource.js': ['build/active-resource.js'],
           'dist/active-resource.min.js': ['build/active-resource.min.js'],
-          'dist/active-resource.min.js.map': ['build/active-resource.min.js.map']
-        }
+          'dist/active-resource.min.js.map': [
+            'build/active-resource.min.js.map',
+          ],
+        },
       },
     },
     connect: {
       test: {
         options: {
-          port: 8000
-        }
-      }
+          port: 8000,
+        },
+      },
     },
     jasmine: {
       activeresource: {
@@ -138,95 +147,104 @@ module.exports = function(grunt) {
           keepRunner: true,
           specs: 'spec/spec.js',
           host: 'http://127.0.0.1:8000',
-          vendor: [
-            '/node_modules/jquery/dist/jquery.min.js'
-          ],
+          vendor: ['/node_modules/jquery/dist/jquery.min.js'],
           template: require('grunt-template-jasmine-requirejs'),
           templateOptions: {
             requireConfig: {
               baseUrl: '/',
               paths: {
-                "axios": '/node_modules/axios/dist/axios',
-                "moxios": '/node_modules/moxios/dist/moxios.min',
-                "es6-promise": '/node_modules/es6-promise/dist/es6-promise',
-                "qs": '/node_modules/qs/dist/qs',
-                "underscore": '/node_modules/underscore/underscore-min',
-                "underscore.string": '/node_modules/underscore.string/dist/underscore.string',
-                "underscore.inflection": '/node_modules/underscore.inflection/lib/underscore.inflection',
-                "active-resource": '/build/active-resource',
-                "jquery": '/node_modules/jquery/dist/jquery.min',
-                "jasmine-jquery": '/node_modules/jasmine-jquery/lib/jasmine-jquery',
-                "jasmine-ajax": '/node_modules/jasmine-ajax/lib/mock-ajax',
-                "jasmine-promises": '/node_modules/jasmine-promises/dist/jasmine-promises',
-              }
-            }
-          }
-        }
+                axios: '/node_modules/axios/dist/axios',
+                moxios: '/node_modules/moxios/dist/moxios.min',
+                'es6-promise': '/node_modules/es6-promise/dist/es6-promise',
+                qs: '/node_modules/qs/dist/qs',
+                underscore: '/node_modules/underscore/underscore-min',
+                'underscore.string':
+                  '/node_modules/underscore.string/dist/underscore.string',
+                'underscore.inflection':
+                  '/node_modules/underscore.inflection/lib/underscore.inflection',
+                'active-resource': '/build/active-resource',
+                jquery: '/node_modules/jquery/dist/jquery.min',
+                'jasmine-jquery':
+                  '/node_modules/jasmine-jquery/lib/jasmine-jquery',
+                'jasmine-ajax': '/node_modules/jasmine-ajax/lib/mock-ajax',
+                'jasmine-promises':
+                  '/node_modules/jasmine-promises/dist/jasmine-promises',
+              },
+            },
+          },
+        },
       },
       travis: {
         options: {
           keepRunner: true,
           specs: 'spec/spec.js',
-          vendor: [
-            '/node_modules/jquery/dist/jquery.min.js'
-          ],
+          vendor: ['/node_modules/jquery/dist/jquery.min.js'],
           template: require('grunt-template-jasmine-requirejs'),
           templateOptions: {
             requireConfig: {
               baseUrl: '/',
               paths: {
-                "axios": '/node_modules/axios/dist/axios',
-                "moxios": '/node_modules/moxios/dist/moxios.min',
-                "es6-promise": '/node_modules/es6-promise/dist/es6-promise',
-                "qs": '/node_modules/qs/dist/qs',
-                "underscore": '/node_modules/underscore/underscore-min',
-                "underscore.string": '/node_modules/underscore.string/dist/underscore.string',
-                "underscore.inflection": '/node_modules/underscore.inflection/lib/underscore.inflection',
-                "active-resource": '/build/active-resource',
-                "jquery": '/node_modules/jquery/dist/jquery.min',
-                "jasmine-jquery": '/node_modules/jasmine-jquery/lib/jasmine-jquery',
-                "jasmine-ajax": '/node_modules/jasmine-ajax/lib/mock-ajax',
-                "jasmine-promises": '/node_modules/jasmine-promises/dist/jasmine-promises',
-              }
-            }
-          }
-        }
-      }
-    }
-
-  });
+                axios: '/node_modules/axios/dist/axios',
+                moxios: '/node_modules/moxios/dist/moxios.min',
+                'es6-promise': '/node_modules/es6-promise/dist/es6-promise',
+                qs: '/node_modules/qs/dist/qs',
+                underscore: '/node_modules/underscore/underscore-min',
+                'underscore.string':
+                  '/node_modules/underscore.string/dist/underscore.string',
+                'underscore.inflection':
+                  '/node_modules/underscore.inflection/lib/underscore.inflection',
+                'active-resource': '/build/active-resource',
+                jquery: '/node_modules/jquery/dist/jquery.min',
+                'jasmine-jquery':
+                  '/node_modules/jasmine-jquery/lib/jasmine-jquery',
+                'jasmine-ajax': '/node_modules/jasmine-ajax/lib/mock-ajax',
+                'jasmine-promises':
+                  '/node_modules/jasmine-promises/dist/jasmine-promises',
+              },
+            },
+          },
+        },
+      },
+    },
+  })
 
   // load the tasks
-  grunt.loadNpmTasks('grunt-contrib-clean');
-  grunt.loadNpmTasks('grunt-contrib-coffee');
-  grunt.loadNpmTasks('grunt-contrib-concat');
-  grunt.loadNpmTasks('grunt-exec');
-  grunt.loadNpmTasks('grunt-contrib-uglify');
-  grunt.loadNpmTasks('grunt-contrib-connect');
-  grunt.loadNpmTasks('grunt-contrib-jasmine');
-  grunt.loadNpmTasks('grunt-rollup');
+  grunt.loadNpmTasks('grunt-contrib-clean')
+  grunt.loadNpmTasks('grunt-contrib-coffee')
+  grunt.loadNpmTasks('grunt-contrib-concat')
+  grunt.loadNpmTasks('grunt-exec')
+  grunt.loadNpmTasks('grunt-contrib-uglify')
+  grunt.loadNpmTasks('grunt-contrib-connect')
+  grunt.loadNpmTasks('grunt-contrib-jasmine')
+  grunt.loadNpmTasks('grunt-rollup')
 
   grunt.registerTask(
     'build',
     'Compiles and runs the Javascript spec files for ActiveResource.js source code.',
-    [ 'coffee:build', 'rollup:build', 'spec' ]
-  );
+    ['coffee:build', 'rollup:build']
+  )
 
   grunt.registerTask(
     'spec',
     'Compiles and runs the Javascript spec files for ActiveResource.js source code.',
-    [ 'clean:specs', 'coffee:specs', 'rollup:specs', 'connect:test', 'jasmine:activeresource' ]
-  );
+    [
+      'clean:specs',
+      'coffee:specs',
+      'rollup:specs',
+      'connect:test',
+      'jasmine:activeresource',
+    ]
+  )
 
   grunt.registerTask(
     'travis',
     'Compiles and runs the Javascript spec files for ActiveResource.js source code specifically for Travis CI.',
-    [ 'clean:specs', 'coffee:specs', 'rollup:specs', 'jasmine:travis' ]
-  );
+    ['clean:specs', 'coffee:specs', 'rollup:specs', 'jasmine:travis']
+  )
 
   grunt.registerTask(
     'release',
     'Creates a new release of the library in the dist folder',
-    [ 'clean:dist', 'build', 'uglify:release', 'concat:release' ]
-  );
-};
+    ['clean:dist', 'build', 'uglify:release', 'concat:release']
+  )
+}
