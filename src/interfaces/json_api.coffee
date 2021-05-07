@@ -57,7 +57,6 @@ ActiveResource.Interfaces.JsonApi = class ActiveResource::Interfaces::JsonApi ex
   # @return [Object] the object with attributes in underscore format
   toUnderscored: (object) ->
     underscored = {}
-
     underscorize = (value) =>
       if _.isObject(value) && !value.isA?(ActiveResource::Base) && !value.isA?(ActiveResource::Collection) && !_.isDate(value)
         this.toUnderscored(value)
@@ -65,7 +64,7 @@ ActiveResource.Interfaces.JsonApi = class ActiveResource::Interfaces::JsonApi ex
         value
 
     for k, v of object
-      underscored[s.underscored(k)] =
+      underscored[_.snakeCase(k)] =
         if _.isArray(v)
           _.map v, underscorize
         else
@@ -90,7 +89,7 @@ ActiveResource.Interfaces.JsonApi = class ActiveResource::Interfaces::JsonApi ex
         value
 
     for k, v of object
-      camelized[s.camelize(k)] =
+      camelized[_.camelCase(k)] =
         if _.isArray(v)
           _.map v, camelize
         else
@@ -113,21 +112,19 @@ ActiveResource.Interfaces.JsonApi = class ActiveResource::Interfaces::JsonApi ex
   # @param [Object] filters the object containing filter data to be transformed
   # @return [Object] the transformed filters
   buildFilters: (filters) ->
-    this.toUnderscored(
-      _.mapObject filters, (value) ->
-        transformValue = (v) ->
-          if v?.isA?(ActiveResource::Base)
-            v[v.klass().primaryKey]
-          else if _.isNull(v)
-            '%00'
-          else
-            v
-
-        if _.isArray(value) || value?.isA?(ActiveResource.Collection)
-          ActiveResource.Collection.build(value).map((v) => transformValue(v)).join()
+    attributes = _.mapValues filters, (value) ->
+      transformValue = (v) ->
+        if v?.isA?(ActiveResource::Base)
+          v[v.klass().primaryKey]
+        else if _.isNull(v)
+          '%00'
         else
-          transformValue(value)
-    )
+          v
+      if _.isArray(value) || value?.isA?(ActiveResource.Collection)
+        ActiveResource.Collection.build(value).map((v) => transformValue(v)).join()
+      else
+        transformValue(value)
+    this.toUnderscored(attributes)
 
   # Takes in an object of modelName/fieldArray pairs and joins the fieldArray into a string
   #
@@ -180,8 +177,8 @@ ActiveResource.Interfaces.JsonApi = class ActiveResource::Interfaces::JsonApi ex
       mergeNestedIncludes(queryParams.include)
 
     this.toUnderscored(
-      _.mapObject fields, (fieldArray) ->
-        _.map(fieldArray, (f) -> s.underscored(f)).join()
+      _.mapValues fields, (fieldArray) ->
+        _.map(fieldArray, (f) -> _.snakeCase(f)).join()
     )
 
   # Takes in an array of include objects (strings, nested strings in objects) and turns them into a
@@ -214,13 +211,13 @@ ActiveResource.Interfaces.JsonApi = class ActiveResource::Interfaces::JsonApi ex
   # 4. Return the includeStrArray as a ',' joined string
   buildIncludeTree: (includes) ->
     buildNestedIncludes = (object) ->
-      modelName = s.underscored(_.keys(object)[0])
+      modelName = _.snakeCase(_.keys(object)[0])
       value = _.values(object)[0]
 
       includeCollection =
         ActiveResource::Collection.build([value]).flatten().map((item) ->
           if _.isString(item)
-            _.map(item.split(','), (i) -> s.underscored(i))
+            _.map(item.split(','), (i) -> _.snakeCase(i))
           else if _.isObject(item)
             buildNestedIncludes(item)
         ).flatten()
@@ -232,7 +229,7 @@ ActiveResource.Interfaces.JsonApi = class ActiveResource::Interfaces::JsonApi ex
         includeStrArray.push buildNestedIncludes(include)...
         includeStrArray
       else
-        includeStrArray.push s.underscored(include)
+        includeStrArray.push _.snakeCase(include)
         includeStrArray
     ).join()
 
@@ -251,9 +248,9 @@ ActiveResource.Interfaces.JsonApi = class ActiveResource::Interfaces::JsonApi ex
     output = []
     for column, dir of sortObject
       if dir == 'asc'
-        output.push s.underscored(column)
+        output.push _.snakeCase(column)
       else if dir == 'desc'
-        output.push "-#{s.underscored(column)}"
+        output.push "-#{_.snakeCase(column)}"
 
     output.join(',')
 
@@ -289,7 +286,7 @@ ActiveResource.Interfaces.JsonApi = class ActiveResource::Interfaces::JsonApi ex
 
       return if !onlyChanged && ((reflection.collection() && target.empty()) || !target?)
 
-      output[s.underscored(reflection.name)] = {
+      output[_.snakeCase(reflection.name)] = {
         data: this.buildResourceDocument({
           resourceData: target,
           onlyResourceIdentifiers: !reflection.autosave(),
@@ -328,7 +325,7 @@ ActiveResource.Interfaces.JsonApi = class ActiveResource::Interfaces::JsonApi ex
 
           if onlyChanged
             changedFields = resource.changedFields().toArray()
-            attributes = _.pick(attributes, changedFields...)
+            attributes = _.pick(attributes, changedFields)
             relationships = _.intersection(relationships, changedFields)
 
           documentResource['attributes'] = this.toUnderscored(attributes) if !_.isEmpty(attributes)
@@ -361,7 +358,7 @@ ActiveResource.Interfaces.JsonApi = class ActiveResource::Interfaces::JsonApi ex
   # @param [Object] resourceRegister cache of resources for the query that have already been created, to avoid duplicate creation
   # @return [ActiveResource] the built ActiveResource
   buildResource: (data, includes, { existingResource, parentRelationship, resourceRegister }) ->
-    resource = existingResource || @resourceLibrary.constantize(_.singularize(s.classify(data['type']))).build()
+    resource = existingResource || @resourceLibrary.constantize(_.upperFirst(_.camelCase(pluralize.singular(data['type'])))).build()
     justCreated = existingResource && existingResource.newResource()
     resourceRegister = resourceRegister || {}
 
@@ -390,21 +387,21 @@ ActiveResource.Interfaces.JsonApi = class ActiveResource::Interfaces::JsonApi ex
     resource.klass().reflectOnAllAssociations().each (reflection) =>
       association = resource.association(reflection.name)
 
-      if(relationshipLinks = data['relationships']?[s.underscored(reflection.name)]?['links'])?
+      if(relationshipLinks = data['relationships']?[_.snakeCase(reflection.name)]?['links'])?
         association.__links = _.extend(association.links(),
-          _.mapObject(relationshipLinks, (l) =>
+          _.mapValues(relationshipLinks, (l) =>
             ActiveResource::Links.__constructLink(l)
           )
         )
       else if (selfLink = resource.links()['self'])?
-        url_safe_reflection_name = s.underscored(reflection.name)
+        url_safe_reflection_name = _.snakeCase(reflection.name)
         association.__links = {
           self: ActiveResource::Links.__constructLink(selfLink, 'relationships', url_safe_reflection_name),
           related: ActiveResource::Links.__constructLink(selfLink, url_safe_reflection_name)
         }
 
       relationshipEmpty =
-        if _.isObject(relationship = data['relationships']?[s.underscored(reflection.name)]?['data'])
+        if _.isObject(relationship = data['relationships']?[_.snakeCase(reflection.name)]?['data'])
           _.keys(relationship).length == 0
         else if @resourceLibrary.immutable
           !_.isUndefined(relationship) && (_.isNull(relationship) || _.isEmpty(relationship) || _.has(attributes, reflection.name))
@@ -465,7 +462,7 @@ ActiveResource.Interfaces.JsonApi = class ActiveResource::Interfaces::JsonApi ex
   # @return [Object] the attributes with all relationships built into it
   addRelationshipsToFields: (attributes, relationships, includes, resource, resourceRegister) ->
     _.each relationships, (relationship, relationshipName) =>
-      if(reflection = resource.klass().reflectOnAssociation(s.camelize(relationshipName)))
+      if(reflection = resource.klass().reflectOnAssociation(_.camelCase(relationshipName)))
         if reflection.collection()
           relationshipItems =
             ActiveResource::Collection.build(relationship['data'])
@@ -505,7 +502,7 @@ ActiveResource.Interfaces.JsonApi = class ActiveResource::Interfaces::JsonApi ex
     findConditions = { type: relationshipData.type }
     findConditions[primaryKey] = relationshipData[primaryKey]
 
-    include = _.findWhere(includes, findConditions)
+    include = _.find(includes, findConditions)
 
     if reflection.collection()
       target =
@@ -518,7 +515,7 @@ ActiveResource.Interfaces.JsonApi = class ActiveResource::Interfaces::JsonApi ex
 
     buildResourceOptions = { resourceRegister: resourceRegister }
     if reflection.polymorphic()
-      parentReflection = reflection.polymorphicInverseOf(this.resourceLibrary.constantize(_.singularize(s.classify(relationshipData['type']))))
+      parentReflection = reflection.polymorphicInverseOf(this.resourceLibrary.constantize(_.upperFirst(_.camelCase(pluralize.singular(relationshipData['type'])))))
     else
       parentReflection = reflection.inverseOf()
 
@@ -572,6 +569,7 @@ ActiveResource.Interfaces.JsonApi = class ActiveResource::Interfaces::JsonApi ex
   # @param [ActiveResource::Base] the resource to add errors onto
   # @return [ActiveResource::Base] the unpersisted resource, now with errors
   resourceErrors: (resource, errors) ->
+    debugger
     errorCollection =
       ActiveResource.Collection.build(errors).map((error) ->
         field = []
@@ -580,9 +578,9 @@ ActiveResource.Interfaces.JsonApi = class ActiveResource::Interfaces::JsonApi ex
         else
           _.each error['source']['pointer'].split('/data'), (i) ->
             if(m = i.match(/\/(attributes|relationships|)\/(\w+)/))?
-              field.push s.camelize(m[2])
+              field.push _.camelCase(m[2])
 
-        resource.errors().__buildError(field.join('.'), s.camelize(error['code']), error['detail'])
+        resource.errors().__buildError(field.join('.'), _.camelCase(error['code']), error['detail'])
       )
 
     resource.errors().propagate(errorCollection)
@@ -607,8 +605,8 @@ ActiveResource.Interfaces.JsonApi = class ActiveResource::Interfaces::JsonApi ex
   parameterErrors: (errors) ->
     ActiveResource::Collection.build(errors).map((error) ->
       out = { detail: error['detail'], message: error['detail'] }
-      out['parameter'] = s.camelize(error['source']['parameter']) if error['source']?['parameter']?
-      out['code'] = s.camelize(error['code'])
+      out['parameter'] = _.camelCase(error['source']['parameter']) if error['source']?['parameter']?
+      out['code'] = _.camelCase(error['code'])
       out
     )
 
@@ -696,13 +694,15 @@ ActiveResource.Interfaces.JsonApi = class ActiveResource::Interfaces::JsonApi ex
       })
     }
 
+    if options['attributes']
+      data['data']['attributes'] = _.pick(data['data']['attributes'], _.keys(options['attributes']))
+
     unless options['onlyResourceIdentifiers']
       queryParams = resourceData.queryParams()
 
       if queryParams['fields']?
         data['fields']  = this.buildSparseFieldset(queryParams['fields'], queryParams)
       data['include'] = this.buildIncludeTree(queryParams['include'])   if queryParams['include']?
-
     _this = this
     @request(url, 'PATCH', data)
     .then (response) ->
@@ -731,7 +731,7 @@ ActiveResource.Interfaces.JsonApi = class ActiveResource::Interfaces::JsonApi ex
       if queryParams['fields']?
         data['fields']  = this.buildSparseFieldset(queryParams['fields'], queryParams)
       data['include'] = this.buildIncludeTree(queryParams['include'])   if queryParams['include']?
-
+    
     _this = this
     @request(url, 'PUT', data)
     .then (response) ->

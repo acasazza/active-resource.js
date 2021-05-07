@@ -134,5 +134,5 @@ class ActiveResource::Attributes
       else
         @klass().attributes().all.include(attribute)
     else
-      !_.isFunction(value) && !_.contains(reserved, attribute) &&
+      !_.isFunction(value) && !_.includes(reserved, attribute) &&
         try !@association(attribute)? catch e then true

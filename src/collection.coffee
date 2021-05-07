@@ -82,7 +82,7 @@ ActiveResource.Collection = class ActiveResource::Collection
   # @param n [Integer] the number of resources to return
   # @return  [Array] array of N resources
   first: (n) ->
-    output = _.first(@__collection, n || 1)
+    output = _.slice(@__collection, 0, n || 1)
     if n
       output
     else
@@ -93,7 +93,7 @@ ActiveResource.Collection = class ActiveResource::Collection
   # @param n [Integer] the number of resources to return
   # @return  [Array] array of N resources
   last: (n) ->
-    output = _.last(@__collection, n || 1)
+    output = _.slice(@__collection, -n || -1)
     if n
       output
     else
@@ -139,7 +139,7 @@ ActiveResource.Collection = class ActiveResource::Collection
   # @param [String] separator the string to separate each item of the collection with
   # @return [String] the joined collection
   join: (separator = ',') ->
-    s.join(separator, _.map(@__collection, (i) -> i.toString())...)
+    _.join(separator, _.map(@__collection, (i) -> i.toString())...)
 
   # Flattens a deep nested array into a shallow array
   #
@@ -197,7 +197,7 @@ ActiveResource.Collection = class ActiveResource::Collection
   # @param [Function] predicate the function to evaluate each resource in the collection with
   # @return [Value] the first resource that returned true in the predicate
   detect: (predicate) ->
-    _.detect(@__collection, predicate)
+    _.find(@__collection, predicate)
 
   # Duplicates the items of the collection into a new collection
   #

@@ -71,7 +71,7 @@ ActiveResource.createResourceLibrary = (baseUrl, options = {}) ->
     # @return [Class] the klass now inheriting from ActiveResource::Base
     createResource: (klass) ->
       klass.className ||= klass.name
-      klass.queryName ||= _.pluralize(s.underscored(klass.className))
+      klass.queryName ||= pluralize(_.snakeCase(klass.className))
 
       klass.define?()
 

@@ -142,7 +142,7 @@ ActiveResource.Errors = class ActiveResource::Errors
   forField: (field) ->
     ActiveResource::Collection
     .build(_.keys(@__errors))
-    .select((k) => s.startsWith(k, field))
+    .select((k) => _.startsWith(k, field))
     .map((k) => @__errors[k]).flatten()
 
   # Returns the error object for an field

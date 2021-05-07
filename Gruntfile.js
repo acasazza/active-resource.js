@@ -1,4 +1,4 @@
-var babel = require('rollup-plugin-babel')
+var babel = require('@rollup/plugin-babel').default
 
 module.exports = function (grunt) {
   // configure the tasks
@@ -14,6 +14,7 @@ module.exports = function (grunt) {
     },
     coffee: {
       build: {
+        map: true,
         files: {
           'build/active-resource.js': [
             'src/active-resource.coffee',

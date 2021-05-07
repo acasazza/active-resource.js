@@ -87,9 +87,8 @@ class ActiveResource::Persistence
       obj[k] = null
       obj
     ))
-
     @__assignAttributes(attributes)
-    @__createOrUpdate()
+    @__createOrUpdate(attributes)
     .then null, (resource) ->
       resource.__assignAttributes(oldAttributes)
       resource
@@ -124,10 +123,10 @@ class ActiveResource::Persistence
   #   we have to send the entire resource to the server, warranting use of the `PUT` verb
   #
   # @return [Promise] a promise to return the persisted ActiveResource **or** ActiveResource with errors
-  @__createOrUpdate: ->
+  @__createOrUpdate: (attributes = {}) ->
     @errors().reset()
 
     if @persisted()
-      @klass().resourceLibrary.interface.patch @links()['self'], this
+      @klass().resourceLibrary.interface.patch @links()['self'], this, { attributes }
     else
       @klass().resourceLibrary.interface.post @links()['related'], this

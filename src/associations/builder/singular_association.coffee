@@ -12,10 +12,10 @@ class ActiveResource::Associations::Builder::SingularAssociation extends ActiveR
   # @param [Class] mixin the class to mix getter methods into
   # @param [String] name the name of the association
   @defineWriters: (mixin, name) ->
-    mixin::["assign#{s.capitalize(name)}"] = (value) ->
+    mixin::["assign#{_.capitalize(name)}"] = (value) ->
       @association(name).writer(value, false, true)
 
-    mixin::["update#{s.capitalize(name)}"] = (value) ->
+    mixin::["update#{_.capitalize(name)}"] = (value) ->
       @association(name).writer(value, true, true)
 
   # Defines builder methods on the model for the association
@@ -26,8 +26,8 @@ class ActiveResource::Associations::Builder::SingularAssociation extends ActiveR
   # @param [Class] mixin the class to mix construction methods into
   # @param [String] name the name of the association
   @defineConstructors: (mixin, name) ->
-    mixin::["build#{s.capitalize(name)}"] = (attributes) ->
+    mixin::["build#{_.capitalize(name)}"] = (attributes) ->
       @association(name).build(attributes)
 
-    mixin::["create#{s.capitalize(name)}"] = (attributes, callback) ->
+    mixin::["create#{_.capitalize(name)}"] = (attributes, callback) ->
       @association(name).create(attributes, callback)

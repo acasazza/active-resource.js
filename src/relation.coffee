@@ -150,7 +150,6 @@ ActiveResource.Relation = class ActiveResource::Relation
           ,
           queryParams['fields']
         )
-
     @__newRelation(queryParams)
 
   # Defines the page number of the query

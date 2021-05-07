@@ -176,7 +176,7 @@ ActiveResource.Reflection = class ActiveResource::Reflection
     # Derives the class name of the reflection from its name
     # @return [String] the class name of the reflection
     __deriveClassName: ->
-      s.classify(_.singularize(@name))
+      _.upperFirst(_.camelCase(pluralize.singular(@name)))
 
     # Derives the foreign key of the reflection based on its type
     # @return [String] the foreign key of the reflection
@@ -186,7 +186,7 @@ ActiveResource.Reflection = class ActiveResource::Reflection
       else if @options['as']
         "#{@options['as']}Id"
       else
-        "#{s.camelize(@activeResource.className, true)}Id"
+        "#{_.camelCase(@activeResource.className, true)}Id"
 
     # Determines the primaryKey of a given class
     # @note Throws an error if the primaryKey could not be determined
@@ -220,7 +220,7 @@ ActiveResource.Reflection = class ActiveResource::Reflection
     # @return [Reflection,Boolean] the automaticInverseOf reflection for this reflection
     automaticInverseOf = (reflection) ->
       if canFindInverseOfAutomatically(reflection)
-        inverseName = s.camelize(reflection.options['as'] || reflection.activeResource.className,true)
+        inverseName = _.camelCase(reflection.options['as'] || reflection.activeResource.className,true)
 
         try inverseReflection = reflection.klass().reflectOnAssociation(inverseName)
         catch e then inverseReflection = false
@@ -246,7 +246,7 @@ ActiveResource.Reflection = class ActiveResource::Reflection
     # @return [Boolean] whether or not we can find the inverseOf automatically
     canFindInverseOfAutomatically = (reflection) ->
       reflection.options['inverseOf'] != false &&
-        _.include(VALID_AUTOMATIC_INVERSE_MACROS, reflection.macro) &&
+        _.includes(VALID_AUTOMATIC_INVERSE_MACROS, reflection.macro) &&
         _.isEmpty(_.pick(reflection.options, INVALID_AUTOMATIC_INVERSE_OPTIONS...))
 
     # Checks if inverse reflection that is returned from `automaticInverseOf` method is a

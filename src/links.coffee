@@ -21,5 +21,5 @@ ActiveResource.Links = class ActiveResource::Links
   # @return [String] joined segments of URL together with /
   @__constructLink: (args...) ->
     _.map(args, (str) ->
-      if s.endsWith(str, '/') then str else str + '/'
+      if _.endsWith(str, '/') then str else str + '/'
     ).join('')

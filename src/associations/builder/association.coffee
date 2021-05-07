@@ -31,7 +31,7 @@ class ActiveResource::Associations::Builder
     # @param [String] name the name of the association
     @defineReaders: (mixin, name) ->
       mixin::[name] = -> @association(name).reader()
-      mixin::["load#{s.capitalize(name)}"] = -> @association(name).loadTarget()
+      mixin::["load#{_.capitalize(name)}"] = -> @association(name).loadTarget()
 
     # Defines setter methods on the model for the association
     #
