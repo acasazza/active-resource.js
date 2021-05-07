@@ -15,7 +15,7 @@
   "dependencies": {
     "axios": "^0.21.1",
     "es6-promise": "^4.1.1",
-    "pluralize": "^8.0.0",
+    "pluralize-js": "^8.0.1",
     "qs": "^6.5.0"
   },
   "engine": "node >= 0.10",
