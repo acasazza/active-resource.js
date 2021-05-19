@@ -64,12 +64,15 @@ ActiveResource.Interfaces.JsonApi = class ActiveResource::Interfaces::JsonApi ex
         value
 
     for k, v of object
+      regexNumber = /\d+/
+      thereIsNumber = _.first(k.match(regexNumber))
+      if thereIsNumber
+        k = k.replace(thereIsNumber, "_#{thereIsNumber}")
       underscored[_.snakeCase(k)] =
         if _.isArray(v)
           _.map v, underscorize
         else
           underscorize(v)
-
     underscored
 
   # Converts an object's attributes to camelCase format
@@ -213,7 +216,6 @@ ActiveResource.Interfaces.JsonApi = class ActiveResource::Interfaces::JsonApi ex
     buildNestedIncludes = (object) ->
       modelName = _.snakeCase(_.keys(object)[0])
       value = _.values(object)[0]
-
       includeCollection =
         ActiveResource::Collection.build([value]).flatten().map((item) ->
           if _.isString(item)
@@ -229,7 +231,8 @@ ActiveResource.Interfaces.JsonApi = class ActiveResource::Interfaces::JsonApi ex
         includeStrArray.push buildNestedIncludes(include)...
         includeStrArray
       else
-        includeStrArray.push _.snakeCase(include)
+        include = _.map(include.split('.'), (i) -> _.snakeCase(i)).join('.')
+        includeStrArray.push include
         includeStrArray
     ).join()
 
@@ -569,7 +572,6 @@ ActiveResource.Interfaces.JsonApi = class ActiveResource::Interfaces::JsonApi ex
   # @param [ActiveResource::Base] the resource to add errors onto
   # @return [ActiveResource::Base] the unpersisted resource, now with errors
   resourceErrors: (resource, errors) ->
-    debugger
     errorCollection =
       ActiveResource.Collection.build(errors).map((error) ->
         field = []
@@ -693,9 +695,8 @@ ActiveResource.Interfaces.JsonApi = class ActiveResource::Interfaces::JsonApi ex
         onlyChanged: true
       })
     }
-
     if options['attributes']
-      data['data']['attributes'] = _.pick(data['data']['attributes'], _.keys(options['attributes']))
+      data['data']['attributes'] = _.pick(data['data']['attributes'], _.keys(this.toUnderscored(options['attributes'])))
 
     unless options['onlyResourceIdentifiers']
       queryParams = resourceData.queryParams()
