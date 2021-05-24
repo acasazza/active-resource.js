@@ -14,7 +14,9 @@ module.exports = function (grunt) {
     },
     coffee: {
       build: {
-        map: true,
+        options: {
+          // sourceMap: true,
+        },
         files: {
           'build/active-resource.js': [
             'src/active-resource.coffee',
@@ -41,15 +43,15 @@ module.exports = function (grunt) {
             'src/associations/association.coffee',
             'src/associations/collection_association.coffee',
             'src/associations/collection_proxy.coffee',
-            'src/associations/has_many_association.coffee',
             'src/associations/singular_association.coffee',
+            'src/associations/has_many_association.coffee',
             'src/associations/has_one_association.coffee',
             'src/associations/belongs_to_association.coffee',
             'src/associations/belongs_to_polymorphic_association.coffee',
             'src/associations/builder/association.coffee',
             'src/associations/builder/collection_association.coffee',
-            'src/associations/builder/has_many.coffee',
             'src/associations/builder/singular_association.coffee',
+            'src/associations/builder/has_many.coffee',
             'src/associations/builder/belongs_to.coffee',
             'src/associations/builder/has_one.coffee',
             'src/immutable.coffee',
